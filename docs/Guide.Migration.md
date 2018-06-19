@@ -35,11 +35,19 @@ beforeEach(function ( /* ... your content ... */ ) {});
 afterEach(function ( /* ... your content ... */ ) {});
 ```
 
-* **Jest.** While confusing, it is correct that instead of `afterEach` you [call the adapter](/examples/demo-react-native-jest/e2e/init.js) in `afterAll`. Also, make sure you register the adapter as a Jasmine reporter in `init.js` like this:
-
-```js
-jasmine.getEnv().addReporter(adapter);
-```
+* **Jest.**
+	* Make sure you register the adapter as a Jasmine reporter in `init.js` like this:
+	```js
+	jest.setTimeout(120000);
+	jasmine.getEnv().addReporter(adapter); // don't forget this line
+	```
+	* And yes, it is correct that instead of `afterEach` you [call the adapter](/examples/demo-react-native-jest/e2e/init.js#L18) in `afterAll`:
+	```js
+	afterAll(async () => {
+	  await adapter.afterAll();
+	  await detox.cleanup();
+	});
+	```
 
 #### Changes to `detox test` CLI
 
@@ -48,7 +56,7 @@ By default it dynamically creates `./artifacts/{configuration}.{timestamp}` dire
 
 Previously, to enable log recording you just had to specify `--artifact-location` arg. Currently, you need to tell that explicitly via a new CLI flag: `--record-logs all` or `--record-logs failing`.
 
-Notice that `--artifact-location` became sensitive to whether you end your directory path with a slash or not. It follows the next convention:
+Notice that `--artifact-location` became sensitive to whether you end your directory path with a slash or not. It has the next convention:
 
 * If you want to create automatically a subdirectory with timestamp and configuration name (to avoid file overwrites upon consquent re-runs), specify a path to directory that *does not end* with a slash.
 * Otherwise, if you want to put artifacts straight to the specified directory (in a case where you make a single run only, e.g. on CI), *add a slash* to the end.
